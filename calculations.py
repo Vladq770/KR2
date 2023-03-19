@@ -1,35 +1,46 @@
 import math
 from numpy import arange
-from mpmath import j1, j0
+from mpmath import *
 from zeros import arr
 
 
 ## Нахождение нормы
-def norma(rk, R):
-    return 2 / (R ** 2 * (j(rk, 0, 10000) ** 2))
+def norma(rk):
+    return 1 / ((j0(rk) ** 2))
 
 
 ## Нахождение значения подинтегральной функции
 def func(r, rk, R):
-    return 100 * math.exp(-(r / (0.1 * R)) ** 2) * j(rk * r / R, 0, 10000) * r
+    return exp(-(r / (0.1 * R)) ** 2) * j0(rk * r / R) * r
+
+
+def integr(rk):
+    return exp(-(rk ** 2 / 400))
 
 
 
 def simpson_method(func, min_lim, max_lim, delta,rk):
     def integrate(func, min_lim, max_lim, n):
-        integral = 0.0
+        integral = mpf(0)
         step = (max_lim - min_lim) / n
         for x in arange(min_lim + step / 2, max_lim - step / 2, step):
             integral += step / 6 * (func(x - step / 2, rk, max_lim) + 4 * func(x,rk, max_lim) + func(x + step / 2, rk, max_lim))
         return integral
 
-    d, n = 1, 1
-    while abs(d) > delta:
-        d = (integrate(func, min_lim, max_lim, n * 2) - integrate(func, min_lim, max_lim, n)) / 15
-        n *= 2
 
-    a = abs(integrate(func, min_lim, max_lim, n))
-    b = abs(integrate(func, min_lim, max_lim, n)) + d
+    d, n = mpf(1), 1
+    f1 = integrate(func, mpf(min_lim), mpf(max_lim), n * 2)
+    f2 = integrate(func, mpf(min_lim), mpf(max_lim), n)
+    while abs(d) > delta:
+        d = (f1 - f2) / 15
+        #print(type(d))
+        #print(d)
+        n *= 2
+        f2 = f1
+        f1 = integrate(func, min_lim, max_lim, n * 2)
+
+    a = abs(f2)
+    b = abs(f2) + d
     if a > b:
         a, b = b, a
     return a
@@ -45,6 +56,12 @@ def j(x, n, steps):
     val += (math.cos(n * 0 - x * math.sin(0)) + math.cos(n * math.pi - x * math.sin(math.pi))) / 2
     return val / steps"""
     return float(j0(x))
+
+
+
+def t0(r, R):
+    return 100 * exp(-(r / (0.1 * R)) ** 2)
+
 
 
 
@@ -77,16 +94,39 @@ def exp_k(R, rk, alpha, L, k, C):
     return lambda_k * k / C
 
 
-def f0(r, R):
-    return 100 * math.exp(-(r / (0.1 * R)) ** 2) * r
+
+def n_theoretical(e, R, k, C, d):
+    N = 1
+    val = 1
+    while(val > e):
+        val = 3 / (0.01 + 4 / R**2 * k / C * d) * exp(-(N * pi)**2 * (1 / 400 + k / C / R**2 * d))
+        #print(val)
+        N += 1
+    print(N)
+    return N
 
 
-def integral0(R, steps, Uc):
+
+def n_experimental(N, R, k, L, C, alpha, e, d):
     val = 0
-    for i in range(1, steps):
-        val += f0(i / R, R) * (R / steps)
-    val += (f0(0, R) + f0(R, R)) * (R / steps) / 2
-    return val * 2 / R ** 2 - Uc
+    for i in range(1, N + 1):
+        val += 1 / (j0(arr[i])**2 * exp(((arr[i] / R) ** 2 + alpha / (L * k)) * k / C * d) * exp(arr[i]**2 / 400))
+        #print(val)
+    temp = val
+    while True:
+        temp -= 1 / (j0(arr[N])**2 * exp(((arr[N] / R) ** 2 + alpha / (L * k)) * k / C * d) * exp(arr[N]**2 / 400))
+        if(abs(temp - val) > e):
+            break
+        N -= 1
+    print(N)
+    return N
+
+
+
+def integral0(Uc):
+
+    val = 1 - exp(-100)
+    return val - Uc
 
 
 
@@ -108,14 +148,14 @@ def row_sum(f, N, e, tmin, R, k, C):
     while(part > e):
         part = f(N, tmin, R, k, C)
         N += 1
-        print("Номер N до", N)
-        print("Член ряда ", part)
+        #print("Номер N до", N)
+        #print("Член ряда ", part)
     n = N
     while(part > e * 1e-6):
         part = f(N, tmin, R, k, C)
         val += part
-        print("Номер N ", N)
-        print("Член ряда ", part)
+        #print("Номер N ", N)
+        #print("Член ряда ", part)
         N += 1
     if val > e:
         while(val > e):
@@ -126,18 +166,24 @@ def row_sum(f, N, e, tmin, R, k, C):
 
 
 def calculation(coeff: list):
-    val, N = row_sum(row_k, 1, coeff[8], coeff[7], coeff[0], coeff[5], coeff[6])
-    print(val, N)
-    if N > len(arr):
-        zeros_of_J1(arr, 10000, N - len(arr), 1e-6)
-    C1 = integral0(coeff[0], 10000, coeff[2])
+    t = int(log10((1 / coeff[8]) ** 2)) + 5
+    if t < 15:
+        t = 15
+    print(t)
+    mp.dps = t
+    n = n_theoretical(coeff[8], coeff[0], coeff[5], coeff[6], coeff[7])
+    N = n_experimental(n, coeff[0], coeff[5], coeff[1], coeff[6], coeff[3], coeff[8], coeff[7])
+    C1 = integral0(coeff[2])
+    print("N=", N)
     C2 = exp_0(coeff[3], coeff[1], coeff[5], coeff[6])
     C1k, C2k, C3k = [], [], []
-    for i in range(N):
+    print(C1)
+    for i in range(N + 1):
         C1k.append(arr[i] / coeff[0])
         #print("Норма", i, norma(arr[i], coeff[0]))
-        #print("Симпсон", i, simpson_method(func, 0, coeff[0], coeff[8], arr[i]))
         #print(i, N, norma(arr[i], coeff[0]), simpson_method(func, 0, coeff[0], coeff[8], arr[i]))
-        C2k.append(norma(arr[i], coeff[0]) * simpson_method(func, 0, coeff[0], coeff[8], arr[i]))
+        #C2k.append(norma(arr[i], coeff[0]) * simpson_method(func, 0, coeff[0], mpf(coeff[8]) ** 2, arr[i]))
+        C2k.append(norma(arr[i]) * integr(arr[i]))
+        #print("Симпсон", i, simpson_method(func, 0, coeff[0], mpf(coeff[8]) ** 2, arr[i]))
         C3k.append(exp_k(coeff[0], arr[i], coeff[3], coeff[1], coeff[5], coeff[6]))
     return C1, C2, C1k, C2k, C3k
