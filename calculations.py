@@ -119,7 +119,7 @@ def n_experimental(N, R, k, L, C, alpha, e, d):
             break
         N -= 1
     print(N)
-    return N
+    return N + 1
 
 
 
