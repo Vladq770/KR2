@@ -4,9 +4,10 @@ import tkinter.messagebox as mb
 from chart import chart
 
 
+scheme = {'Явная схема': 0, 'Неявная схема': 1, 'Схема Кранка-Николсона': 2,}
 def enter(frames: list, root):
     coefficients = []
-    for i in range(len(frames)):
+    for i in range(len(frames) - 1):
         try:
             x = float(frames[i].get())
             print(x, type(x))
@@ -15,6 +16,7 @@ def enter(frames: list, root):
             mb.showerror("Ошибка", msg)
             return
         coefficients.append(x)
+    coefficients.append(scheme[frames[13].get()])
     for i in range(len(coefficients)):
         if i in (0, 1, 3, 4, 5, 6, 7, 8) and coefficients[i] <= 0:
             msg = f'Неверный ввод в строке {i + 1} (необходимо положительное число)'
