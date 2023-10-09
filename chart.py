@@ -1,4 +1,5 @@
 from calculations import calculation, t0
+from explicit_schema import solve_schema0
 from implicit_schema import solve_schema1
 from mpmath import *
 import matplotlib as mpl
@@ -15,6 +16,8 @@ def chart(coeff: list, window):
     C1, C2, C1k, C2k, C3k = calculation(coeff)
     if coeff[13] == 1:
         schema_solve = solve_schema1(coeff)
+    elif coeff[13] == 0:
+        schema_solve = solve_schema0(coeff)
     print("Solve", schema_solve)
     K = int(coeff[9])
     I = int(coeff[10])
