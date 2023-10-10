@@ -1,6 +1,7 @@
 from calculations import calculation, t0
 from explicit_schema import solve_schema0
 from implicit_schema import solve_schema1
+from Crank_Nicholson_schema import solve_schema2
 from mpmath import *
 import matplotlib as mpl
 from matplotlib.figure import Figure
@@ -10,14 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 mpl.use('TkAgg')
-
+scheme = [solve_schema0, solve_schema1, solve_schema2]
 def chart(coeff: list, window):
-    schema_solve = None
     C1, C2, C1k, C2k, C3k = calculation(coeff)
-    if coeff[13] == 1:
-        schema_solve = solve_schema1(coeff)
-    elif coeff[13] == 0:
-        schema_solve = solve_schema0(coeff)
+    schema_solve = scheme[coeff[13]](coeff)
     print("Solve", schema_solve)
     K = int(coeff[9])
     I = int(coeff[10])
@@ -86,8 +83,8 @@ def plot(window, Vt, rt, tt, Vr, rr, tr,s_i, s_k, schema_solve):
     plot1.set_ylabel('V(r, t), град', fontsize=14)
     plot2.plot(tr, Vr, color=colors[0], label=f'r={rr[0]}')
     plot1.plot(rt, Vt, color=colors[0], label=f't={tt[0]}')
-    plot2.plot(tr, schema_solve[:,s_i], color=colors[2], label=f'r={rr[0]}')
-    plot1.plot(rt, schema_solve[s_k,:], color=colors[2], label=f't={tt[0]}')
+    plot2.plot(tr, schema_solve[:,s_i], color=colors[2], label=f'r={rr[0]} (S)')
+    plot1.plot(rt, schema_solve[s_k,:], color=colors[2], label=f't={tt[0]} (S)')
     plot1.legend(fontsize="small")
     plot2.legend(fontsize="small")
 
