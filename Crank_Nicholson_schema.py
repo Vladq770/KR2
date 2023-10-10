@@ -35,7 +35,7 @@ def get_eta(r_i, a2, t, h):
 def get_d(v_t, theta, gamma, eta, N, u_c):
     d_temp = np.zeros(N + 1, dtype=np.float64)
     d_temp[0] = (1 - 2 * theta - gamma) * v_t[0] + 2 * theta * v_t[1] + 2 * gamma * u_c
-    for i in range(1, N - 1):
+    for i in range(1, N):
         d_temp[i] = (1 - theta - gamma) * v_t[i] + (eta[i - 1] + theta / 2) * v_t[i + 1] + ((theta / 2) - eta[i - 1]) * \
                     v_t[i - 1] + 2 * gamma * u_c
     d_temp[N] = theta * v_t[N - 1] + (1 - theta - gamma) * v_t[N] + 2 * gamma * u_c
