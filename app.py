@@ -24,19 +24,29 @@ label_K = LabelFr("K", frm, 0, 9, font)
 label_I = LabelFr("I", frm, 0, 10, font)
 label_hrk = LabelFr("Слой k", frm, 0, 11, font)
 label_hti = LabelFr("Слой i", frm, 0, 12, font)
-Button(frm, text="Ввод", font=font, command=lambda : enter(labels_fr, root)).grid(column=0, row=14)
+Button(frm, text="Ввод", font=font, command=lambda : enter(labels_fr, root)).grid(column=0, row=15)
 label_frame = LabelFrame(frm)
 label = Label(label_frame, text="Тип схемы", width=15, font=('Times 14'))
 label.grid(column=0, row=0)
 label_frame.grid(column=0, row=13, pady=5, padx=10)
-scheme = ('Явная схема', 'Неявная схема', 'Схема Кранка-Николсона')
+label_frame_chart = LabelFrame(frm)
+label_chart = Label(label_frame_chart, text="Тип графика", width=15, font=('Times 14'))
+label_chart.grid(column=0, row=0)
+label_frame_chart.grid(column=0, row=14, pady=5, padx=10)
+scheme = ('Явная схема', 'Неявная схема', 'Схема Кранка-Николсона', 'Явная(Рунге)')
 var = StringVar(value=scheme[1])
-combobox = ttk.Combobox(label_frame, textvariable = var)
+combobox = ttk.Combobox(label_frame, textvariable=var)
 combobox['values'] = scheme
 combobox['state'] = 'readonly'
 combobox.grid(column=1, row=0, padx=5)
+type_chart = ('Погрешность', 'Изменение K, I', 'На разных слоях')
+var_chart = StringVar(value=type_chart[0])
+combobox_chart = ttk.Combobox(label_frame_chart, textvariable=var_chart)
+combobox_chart['values'] = type_chart
+combobox_chart['state'] = 'readonly'
+combobox_chart.grid(column=1, row=0, padx=5)
 
 labels_fr = [label_R, label_L, label_Uc, label_alpha, label_T, label_k, label_c, label_t_min, label_e, label_K, label_I,
-             label_hrk, label_hti, combobox]
+             label_hrk, label_hti, combobox, combobox_chart]
 
 root.mainloop()

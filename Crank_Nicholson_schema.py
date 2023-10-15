@@ -99,6 +99,9 @@ def solve_schema2(coeff):
     gamma = (a2 * t * alpha) / (2 * l * k_)
     eta_i = get_eta(r_i[1:len(r_i) - 1], a2, t, h)
 
+    print('\nУсловие устойчивости:\n')
+
+    print(1-2*theta-gamma)
     #v_i_k = np.zeros(K + 1, dtype=object)
     v_i_k = np.empty((K + 1, N + 1))
     v_i_k[0] = psi_r(r_i, R)
