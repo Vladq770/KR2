@@ -22,6 +22,49 @@ def chart(coeff: list, window):
     ht = coeff[4] / K
     s_t = int(coeff[11]) * ht
     s_r = int(coeff[12]) * hr
+    if coeff[13] == 4:
+        tr = [i * ht for i in range(K + 1)]
+        rt = [i * hr for i in range(I + 1)]
+        print("rt", rt)
+        print(len(rt))
+        print("tr", tr)
+        print(len(tr))
+        tt = [s_k * ht]
+        rr = [s_i * hr]
+        Vt = []
+        Vr = [[]]
+        if s_k == 0:
+            for i in rt:
+                Vt.append(t0(i, coeff[0]))
+        else:
+            for j in rt:
+                val = 0
+                for k in range(1, len(C1k)):
+                    x = j0(C1k[k] * j) * C2k[k] / exp((C3k[k] * s_t))
+                    val += x
+                Vt.append(val)
+            for j in range(len(rt)):
+                Vt[j] += coeff[2] + C1 / exp(C2 * s_t)
+
+        for i in range(len(rr)):
+            Vr[i].append(t0(rr[i], coeff[0]))
+        for i in range(len(rr)):
+            for j in range(1, len(tr)):
+                val = 0
+                for k in range(1, len(C1k)):
+                    val += j0(C1k[k] * rr[i]) * C2k[k] / exp((C3k[k] * tr[j]))
+                Vr[i].append(val)
+        for i in range(len(rr)):
+            for j in range(1, len(tr)):
+                Vr[i][j] += coeff[2] + C1 / exp(C2 * tr[j])
+        print('VT', Vt)
+        print(len(Vt))
+        print('VR', Vr)
+        print(len(Vr))
+        runge = scheme[3](coeff)
+        no_runge = scheme[0](coeff)
+        plt3(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, runge, no_runge)
+        return
     if coeff[14] == 0:
         schema_solve = scheme[coeff[13]](coeff)
         tr = [i * ht for i in range(K + 1)]
@@ -86,9 +129,11 @@ def chart(coeff: list, window):
         tr = [i * ht_i for i in range(K_arr[-1] + 1)]
         rt = [i * hr_i for i in range(I_arr[-1] + 1)]
         print("rt", rt)
+        print(len(rt))
         print("tr", tr)
+        print(len(tr))
         Vt = []
-        Vr = []
+        Vr = [[]]
         if s_k == 0:
             for i in rt:
                 Vt.append(t0(i, coeff[0]))
@@ -102,15 +147,21 @@ def chart(coeff: list, window):
             for j in range(len(rt)):
                 Vt[j] += coeff[2] + C1 / exp(C2 * s_t)
 
-        for i in rr:
-            Vr.append(t0(i, coeff[0]))
-        for j in range(1, len(tr)):
-            val = 0
-            for k in range(1, len(C1k)):
-                val += j0(C1k[k] * s_r) * C2k[k] / exp((C3k[k] * tr[j]))
-            Vr.append(val)
-        for j in range(1, len(tr)):
-            Vr[j] += coeff[2] + C1 / exp(C2 * tr[j])
+        for i in range(len(rr)):
+            Vr[i].append(t0(rr[i], coeff[0]))
+        for i in range(len(rr)):
+            for j in range(1, len(tr)):
+                val = 0
+                for k in range(1, len(C1k)):
+                    val += j0(C1k[k] * rr[i]) * C2k[k] / exp((C3k[k] * tr[j]))
+                Vr[i].append(val)
+        for i in range(len(rr)):
+            for j in range(1, len(tr)):
+                Vr[i][j] += coeff[2] + C1 / exp(C2 * tr[j])
+        print('VT', Vt)
+        print(len(Vt))
+        print('VR', Vr)
+        print(len(Vr))
         plt1(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve, tr_arr, rt_arr, K_arr, I_arr, K_factor, I_factor)
     else:
         schema_solve = scheme[coeff[13]](coeff)
@@ -130,9 +181,9 @@ def plt0(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve):
     plot1 = fig.add_subplot(1, 2, 1)
     plot2 = fig.add_subplot(1, 2, 2)
     max_e = 0
-    print("len Vt", len(Vt))
-    print("len Vt[0]", len(Vt[0]))
-    print('size', schema_solve.shape)
+    #print("len Vt", len(Vt))
+    #print("len Vt[0]", len(Vt[0]))
+    #print('size', schema_solve.shape)
     #print('Vt', Vt)
     #print('Vr', Vr)
     for k in range(len(Vt)):
@@ -172,7 +223,7 @@ def plt1(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve, tr_arr, rt_arr,
     plot2.set_ylabel('V(r, t), град', fontsize=14)
     plot1.set_xlabel('r, см', fontsize=14)
     plot1.set_ylabel('V(r, t), град', fontsize=14)
-    plot2.plot(tr, Vr, color=colors[0], label=f'r={rr[0]}')
+    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={rr[0]}')
     plot1.plot(rt, Vt, color=colors[0], label=f't={tt[0]}')
     for i in range(len(tr_arr)):
         plot2.plot(tr_arr[i], schema_solve[i][:, s_i * (I_factor ** i)], color=colors[i + 1], label=f'K={K_arr[i]}, I={I_arr[i]}')
@@ -206,6 +257,35 @@ def plt2(window, rt, tr, si_arr, sk_arr, schema_solve):
     for i in range(len(si_arr)):
         plot2.plot(tr, schema_solve[:, si_arr[i]], color=colors[i], label=f'i={si_arr[i]}')
         plot1.plot(rt, schema_solve[sk_arr[i], :], color=colors[i], label=f'k={sk_arr[i]}')
+    plot1.legend(fontsize="small")
+    plot2.legend(fontsize="small")
+
+    canvas = FigureCanvasTkAgg(fig, master=window)
+    canvas.draw()
+
+    canvas.get_tk_widget().pack()
+
+    toolbar = NavigationToolbar2Tk(canvas, window)
+    toolbar.update()
+
+    canvas.get_tk_widget().pack()
+
+
+def plt3(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, runge, no_runge):
+    fig = Figure(figsize=(10, 5), dpi=100)
+    colors = ["red", "blue", "green", "black", "orange", "peru", "aqua", "pink", "olive", "lime"]
+    plot1 = fig.add_subplot(1, 2, 1)
+    plot2 = fig.add_subplot(1, 2, 2)
+    plot2.set_xlabel('t, с', fontsize=14)
+    plot2.set_ylabel('V(r, t), град', fontsize=14)
+    plot1.set_xlabel('r, см', fontsize=14)
+    plot1.set_ylabel('V(r, t), град', fontsize=14)
+    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={rr[0]}')
+    plot1.plot(rt, Vt, color=colors[0], label=f't={tt[0]}')
+    plot2.plot(tr, runge[:, s_i], color=colors[1], label=f'С Рунге')
+    plot1.plot(rt, runge[s_k, :], color=colors[1], label=f'С Рунге')
+    plot2.plot(tr, no_runge[:, s_i], color=colors[2], label=f'Без Рунге')
+    plot1.plot(rt, no_runge[s_k, :], color=colors[2], label=f'Без Рунге')
     plot1.legend(fontsize="small")
     plot2.legend(fontsize="small")
 

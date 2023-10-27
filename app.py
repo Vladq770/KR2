@@ -33,7 +33,7 @@ label_frame_chart = LabelFrame(frm)
 label_chart = Label(label_frame_chart, text="Тип графика", width=15, font=('Times 14'))
 label_chart.grid(column=0, row=0)
 label_frame_chart.grid(column=0, row=14, pady=5, padx=10)
-scheme = ('Явная схема', 'Неявная схема', 'Схема Кранка-Николсона', 'Явная(Рунге)')
+scheme = ('Явная схема', 'Неявная схема', 'Схема Кранка-Николсона', 'Явная(Рунге)', 'Явная+Рунге')
 var = StringVar(value=scheme[1])
 combobox = ttk.Combobox(label_frame, textvariable=var)
 combobox['values'] = scheme
