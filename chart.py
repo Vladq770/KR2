@@ -65,6 +65,70 @@ def chart(coeff: list, window):
         no_runge = scheme[0](coeff)
         plt3(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, runge, no_runge)
         return
+    if coeff[13] == 5:
+        K_factor = 2
+        I_factor = 2
+        K_arr = [K]
+        I_arr = [I]
+        for i in range(3):
+            K_arr.append(K_arr[-1] * K_factor)
+            I_arr.append(I_arr[-1] * I_factor)
+        schema_solve_ya = []
+        schema_solve_r = []
+        for i in range(len(K_arr)):
+            coeff[9] = K_arr[i]
+            coeff[10] = I_arr[i]
+            schema_solve_ya.append(scheme[0](coeff))
+            schema_solve_r.append(scheme[3](coeff))
+        tt = [s_k * ht]
+        rr = [s_i * hr]
+        tr_arr = []
+        rt_arr = []
+        for i in range(len(K_arr)):
+            ht_i = coeff[4] / K_arr[i]
+            hr_i = coeff[0] / I_arr[i]
+            tr_arr.append([j * ht_i for j in range(K_arr[i] + 1)])
+            rt_arr.append([j * hr_i for j in range(I_arr[i] + 1)])
+        ht_i = coeff[4] / K_arr[-1]
+        hr_i = coeff[0] / I_arr[-1]
+        tr = [i * ht_i for i in range(K_arr[-1] + 1)]
+        rt = [i * hr_i for i in range(I_arr[-1] + 1)]
+        print("rt", rt)
+        print(len(rt))
+        print("tr", tr)
+        print(len(tr))
+        Vt = []
+        Vr = [[]]
+        if s_k == 0:
+            for i in rt:
+                Vt.append(t0(i, coeff[0]))
+        else:
+            for j in rt:
+                val = 0
+                for k in range(1, len(C1k)):
+                    x = j0(C1k[k] * j) * C2k[k] / exp((C3k[k] * s_t))
+                    val += x
+                Vt.append(val)
+            for j in range(len(rt)):
+                Vt[j] += coeff[2] + C1 / exp(C2 * s_t)
+
+        for i in range(len(rr)):
+            Vr[i].append(t0(rr[i], coeff[0]))
+        for i in range(len(rr)):
+            for j in range(1, len(tr)):
+                val = 0
+                for k in range(1, len(C1k)):
+                    val += j0(C1k[k] * rr[i]) * C2k[k] / exp((C3k[k] * tr[j]))
+                Vr[i].append(val)
+        for i in range(len(rr)):
+            for j in range(1, len(tr)):
+                Vr[i][j] += coeff[2] + C1 / exp(C2 * tr[j])
+        print('VT', Vt)
+        print(len(Vt))
+        print('VR', Vr)
+        print(len(Vr))
+        plt4(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve_ya, schema_solve_r, tr_arr, rt_arr, K_arr, I_arr, K_factor, I_factor)
+        return
     if coeff[14] == 0:
         schema_solve = scheme[coeff[13]](coeff)
         tr = [i * ht for i in range(K + 1)]
@@ -196,10 +260,10 @@ def plt0(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve):
     plot2.set_ylabel('V(r, t), град', fontsize=14)
     plot1.set_xlabel('r, см', fontsize=14)
     plot1.set_ylabel('V(r, t), град', fontsize=14)
-    plot2.plot(tr, Vr[s_i], color=colors[0], label=f'r={rr[s_i]}')
-    plot1.plot(rt, Vt[s_k], color=colors[0], label=f't={tt[s_k]}')
-    plot2.plot(tr, schema_solve[:, s_i], color=colors[2], label=f'r={rr[s_i]} (S)')
-    plot1.plot(rt, schema_solve[s_k, :], color=colors[2], label=f't={tt[s_k]} (S)')
+    plot2.plot(tr, Vr[s_i], color=colors[0], label=f'r={round(rr[s_i], 2)}')
+    plot1.plot(rt, Vt[s_k], color=colors[0], label=f't={round(tt[s_k], 2)}')
+    plot2.plot(tr, schema_solve[:, s_i], color=colors[2], label=f'r={round(rr[s_i], 2)} (S)')
+    plot1.plot(rt, schema_solve[s_k, :], color=colors[2], label=f't={round(tt[s_k], 2)} (S)')
     plot1.legend(fontsize="small")
     plot2.legend(fontsize="small")
 
@@ -223,8 +287,8 @@ def plt1(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve, tr_arr, rt_arr,
     plot2.set_ylabel('V(r, t), град', fontsize=14)
     plot1.set_xlabel('r, см', fontsize=14)
     plot1.set_ylabel('V(r, t), град', fontsize=14)
-    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={rr[0]}')
-    plot1.plot(rt, Vt, color=colors[0], label=f't={tt[0]}')
+    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={round(rr[0], 2)}')
+    plot1.plot(rt, Vt, color=colors[0], label=f't={round(tt[0], 2)}')
     for i in range(len(tr_arr)):
         plot2.plot(tr_arr[i], schema_solve[i][:, s_i * (I_factor ** i)], color=colors[i + 1], label=f'K={K_arr[i]}, I={I_arr[i]}')
         plot1.plot(rt_arr[i], schema_solve[i][s_k * (K_factor ** i), :], color=colors[i + 1], label=f'K={K_arr[i]}, I={I_arr[i]}')
@@ -280,12 +344,42 @@ def plt3(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, runge, no_runge):
     plot2.set_ylabel('V(r, t), град', fontsize=14)
     plot1.set_xlabel('r, см', fontsize=14)
     plot1.set_ylabel('V(r, t), град', fontsize=14)
-    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={rr[0]}')
-    plot1.plot(rt, Vt, color=colors[0], label=f't={tt[0]}')
+    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={round(rr[0], 2)}')
+    plot1.plot(rt, Vt, color=colors[0], label=f't={round(tt[0], 2)}')
     plot2.plot(tr, runge[:, s_i], color=colors[1], label=f'С Рунге')
     plot1.plot(rt, runge[s_k, :], color=colors[1], label=f'С Рунге')
     plot2.plot(tr, no_runge[:, s_i], color=colors[2], label=f'Без Рунге')
     plot1.plot(rt, no_runge[s_k, :], color=colors[2], label=f'Без Рунге')
+    plot1.legend(fontsize="small")
+    plot2.legend(fontsize="small")
+
+    canvas = FigureCanvasTkAgg(fig, master=window)
+    canvas.draw()
+
+    canvas.get_tk_widget().pack()
+
+    toolbar = NavigationToolbar2Tk(canvas, window)
+    toolbar.update()
+
+    canvas.get_tk_widget().pack()
+
+
+def plt4(window, Vt, rt, tt, Vr, rr, tr, s_i, s_k, schema_solve_ya, schema_solve_r, tr_arr, rt_arr, K_arr, I_arr, K_factor, I_factor):
+    fig = Figure(figsize=(10, 5), dpi=100)
+    colors = ["red", "blue", "green", "black", "orange", "peru", "aqua", "pink", "olive", "lime"]
+    plot1 = fig.add_subplot(1, 2, 1)
+    plot2 = fig.add_subplot(1, 2, 2)
+    plot2.set_xlabel('t, с', fontsize=14)
+    plot2.set_ylabel('V(r, t), град', fontsize=14)
+    plot1.set_xlabel('r, см', fontsize=14)
+    plot1.set_ylabel('V(r, t), град', fontsize=14)
+    plot2.plot(tr, Vr[0], color=colors[0], label=f'r={round(rr[0], 2)}')
+    plot1.plot(rt, Vt, color=colors[0], label=f't={round(tt[0], 2)}')
+    for i in range(len(tr_arr)):
+        plot2.plot(tr_arr[i], schema_solve_ya[i][:, s_i * (I_factor ** i)], color=colors[i + 1], label=f'K={K_arr[i]}, I={I_arr[i]} Я')
+        plot1.plot(rt_arr[i], schema_solve_ya[i][s_k * (K_factor ** i), :], color=colors[i + 1], label=f'K={K_arr[i]}, I={I_arr[i]} Я')
+        plot2.plot(tr_arr[i], schema_solve_r[i][:, s_i * (I_factor ** i)], color=colors[i + 5], label=f'K={K_arr[i]}, I={I_arr[i]} Р')
+        plot1.plot(rt_arr[i], schema_solve_r[i][s_k * (K_factor ** i), :], color=colors[i + 5], label=f'K={K_arr[i]}, I={I_arr[i]} Р')
     plot1.legend(fontsize="small")
     plot2.legend(fontsize="small")
 
